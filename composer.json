@@ -1,0 +1,23 @@
+{
+    "name": "tebru/retrofit-php-http-guzzle6",
+    "description": "Retrofit PHP converter using Guzzle6",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Nate Brunette",
+            "email": "n@tebru.net"
+        }
+    ],
+    "require": {
+        "guzzlehttp/guzzle": "^6.0"
+    },
+    "require-dev": {
+        "tebru/retrofit-php": "dev-v3-wip"
+    },
+    "autoload": {
+        "psr-4": {
+            "Tebru\\RetrofitHttp\\Guzzle6\\": "src/"
+        }
+    }
+}
