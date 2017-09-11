@@ -99,7 +99,7 @@ class Guzzle6HttpClient implements HttpClient
     public function wait(): void
     {
         if ($this->requests === []) {
-            throw new LogicException('Retrofit: Cannot call wait() without any pending requests.');
+            return;
         }
 
         $requests = function () {
@@ -107,6 +107,7 @@ class Guzzle6HttpClient implements HttpClient
                 yield function () use ($request) { return $request['promise']; };
             }
         };
+        $this->requests = [];
 
         $pool = new Pool( $this->client, $requests(), [
             'concurrency' => 5,
