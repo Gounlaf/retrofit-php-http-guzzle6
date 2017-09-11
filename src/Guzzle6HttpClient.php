@@ -12,7 +12,6 @@ use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Pool;
-use LogicException;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Tebru\Retrofit\HttpClient;
@@ -102,23 +101,27 @@ class Guzzle6HttpClient implements HttpClient
             return;
         }
 
-        $requests = function () {
-            foreach ($this->requests as $request) {
-                yield function () use ($request) { return $request['promise']; };
+        $requestList = $this->requests;
+        $this->requests = [];
+
+        $requests = function () use ($requestList) {
+            foreach ($requestList as $request) {
+                yield function () use ($request) {
+                    return $request['promise'];
+                };
             }
         };
-        $this->requests = [];
 
         $pool = new Pool( $this->client, $requests(), [
             'concurrency' => 5,
-            'fulfilled' => function (ResponseInterface $response, $index) {
-                return $this->requests[$index]['onResponse']($response);
+            'fulfilled' => function (ResponseInterface $response, $index) use ($requestList) {
+                return $requestList[$index]['onResponse']($response);
             },
-            'rejected' => function ($reason, $index) {
+            'rejected' => function ($reason, $index) use ($requestList) {
                 if ($reason instanceof RequestException && $reason->getResponse() !== null) {
-                    return $this->requests[$index]['onResponse']($reason->getResponse());
+                    return $requestList[$index]['onResponse']($reason->getResponse());
                 }
-                return $this->requests[$index]['onFailure']($reason);
+                return $requestList[$index]['onFailure']($reason);
             },
         ]);
 
