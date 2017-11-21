@@ -36,13 +36,22 @@ class Guzzle6HttpClient implements HttpClient
     private $requests = [];
 
     /**
+     * How many asynchronous request to make at once
+     *
+     * @var int
+     */
+    private $concurrency;
+
+    /**
      * Constructor
      *
      * @param ClientInterface $client
+     * @param int $concurrency
      */
-    public function __construct(ClientInterface $client)
+    public function __construct(ClientInterface $client, int $concurrency = 5)
     {
         $this->client = $client;
+        $this->concurrency = $concurrency;
     }
 
     /**
@@ -113,7 +122,7 @@ class Guzzle6HttpClient implements HttpClient
         };
 
         $pool = new Pool( $this->client, $requests(), [
-            'concurrency' => 5,
+            'concurrency' => $this->concurrency,
             'fulfilled' => function (ResponseInterface $response, $index) use ($requestList) {
                 return $requestList[$index]['onResponse']($response);
             },
